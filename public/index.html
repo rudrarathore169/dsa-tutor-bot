@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master DSA Tutor AI - Interactive Learning Interface</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Prism.js for code syntax highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+  
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar: Settings, Status, Chat History -->
+    <aside class="sidebar" id="sidebar-panel">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="logo-circle">
+            <i data-lucide="brain-circuit" class="logo-icon"></i>
+          </div>
+          <h1>DSA Tutor <span class="logo-accent">AI</span></h1>
+        </div>
+        <button class="new-chat-btn" id="new-chat-btn" title="Start a new chat session">
+          <i data-lucide="plus"></i> New Chat
+        </button>
+      </div>
+
+      <!-- Connection / Model Status Card -->
+      <div class="status-card" id="status-card">
+        <div class="status-indicator-row">
+          <span class="status-dot offline" id="status-dot"></span>
+          <span class="status-text" id="status-text">Checking connection...</span>
+        </div>
+        <div class="status-details" id="status-details">
+          Querying local Ollama service...
+        </div>
+        <div class="ollama-help hidden" id="ollama-help">
+          <p class="help-title"><i data-lucide="alert-circle"></i> Local Setup Required</p>
+          <ol class="help-steps">
+            <li>Ensure <a href="https://ollama.com" target="_blank" class="help-link">Ollama</a> is running locally.</li>
+            <li>Run <code>ollama pull gemma3:4b</code> in your terminal.</li>
+            <li>Refresh this page.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Configurations Section -->
+      <div class="sidebar-section">
+        <h2 class="section-title"><i data-lucide="sliders"></i> Settings</h2>
+        
+        <!-- Language Select -->
+        <div class="setting-item">
+          <label for="language-select">Programming Language</label>
+          <div class="custom-select-wrapper">
+            <select id="language-select">
+              <option value="C++">C++ (Recommended)</option>
+              <option value="Java">Java</option>
+              <option value="Python">Python</option>
+              <option value="JavaScript">JavaScript</option>
+              <option value="TypeScript">TypeScript</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Difficulty Mode Select -->
+        <div class="setting-item">
+          <label for="difficulty-select">Explanation Level</label>
+          <div class="custom-select-wrapper">
+            <select id="difficulty-select">
+              <option value="Beginner">Beginner (Concept-focused)</option>
+              <option value="Intermediate" selected>Intermediate (Balanced)</option>
+              <option value="Advanced">Advanced (Deep Patterns & Proofs)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ollama Model Select -->
+        <div class="setting-item">
+          <label for="model-select">Ollama Model</label>
+          <div class="custom-select-wrapper">
+            <select id="model-select">
+              <option value="gemma3:4b">gemma3:4b (Default)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Specialized Focus Modes -->
+        <div class="setting-item">
+          <label>Focus Modes</label>
+          <div class="focus-modes-grid">
+            <label class="checkbox-container">
+              <input type="checkbox" id="cp-mode">
+              <span class="checkbox-checkmark"></span>
+              Competitive (Fast I/O)
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="dp-mode">
+              <span class="checkbox-checkmark"></span>
+              Dynamic Programming
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="graph-mode">
+              <span class="checkbox-checkmark"></span>
+              Graph Traversal
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" id="bs-mode">
+              <span class="checkbox-checkmark"></span>
+              Binary Search Special
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Section -->
+      <div class="sidebar-section flex-grow">
+        <div class="section-header">
+          <h2 class="section-title"><i data-lucide="history"></i> History</h2>
+          <button class="clear-history-btn" id="clear-history-btn" title="Clear all history">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty" id="history-empty">
+            No saved conversations.
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="sidebar-footer">
+        <div class="footer-info">
+          <span>Ollama Model: <code id="footer-model-name">gemma3:4b</code></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Section -->
+    <main class="chat-main">
+      <!-- Chat Header -->
+      <header class="chat-header">
+        <div class="header-tutor-info">
+          <div class="tutor-avatar">
+            <i data-lucide="graduation-cap"></i>
+            <span class="avatar-pulse"></span>
+          </div>
+          <div>
+            <h2 class="tutor-name">Master DSA Tutor</h2>
+            <div class="tutor-sub">Your Elite Algorithmic Interview Coach</div>
+          </div>
+        </div>
+        <div class="header-badges" id="header-badges">
+          <span class="badge" id="badge-lang">C++</span>
+          <span class="badge" id="badge-diff">Intermediate</span>
+          <span class="badge hidden" id="badge-cp">CP Mode</span>
+          <span class="badge hidden" id="badge-dp">DP Focus</span>
+          <span class="badge hidden" id="badge-graph">Graph Focus</span>
+          <span class="badge hidden" id="badge-bs">BS Focus</span>
+        </div>
+      </header>
+
+      <!-- Chat Messages Container -->
+      <div class="messages-container" id="messages-container">
+        
+        <!-- Welcome Screen (Visible on empty chats) -->
+        <div class="welcome-screen" id="welcome-screen">
+          <div class="welcome-icon">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <h2>Accelerate Your DSA Mastery</h2>
+          <p>Provide a LeetCode problem, general coding question, or custom algorithm challenge. The AI Tutor will guide you step-by-step from raw problem understanding to mathematically optimized code using a structured 10-step pedagogy.</p>
+          
+          <div class="quick-starts-container">
+            <h3>Try one of these sample topics:</h3>
+            <div class="quick-starts-grid">
+              <button class="quick-start-card" data-prompt="Explain Leetcode 1: Two Sum. Please focus on optimal hashing.">
+                <h4>Two Sum Hashing</h4>
+                <p>Learn how to optimize array lookups from O(N²) to O(N).</p>
+                <span class="card-action"><i data-lucide="arrow-right"></i></span>
+              </button>
+              <button class="quick-start-card" data-prompt="Explain the Dynamic Programming approach to find the Longest Common Subsequence (LCS) of two strings.">
+                <h4>DP: Longest Common Subsequence</h4>
+                <p>Derive state definitions, recurrence, and space optimization.</p>
+                <span class="card-action"><i data-lucide="arrow-right"></i></span>
+              </button>
+              <button class="quick-start-card" data-prompt="Explain Dijkstra's Algorithm step-by-step. Use a small graph diagram to show priority queue updates.">
+                <h4>Dijkstra's Algorithm</h4>
+                <p>Understand single-source shortest path using graphs and heaps.</p>
+                <span class="card-action"><i data-lucide="arrow-right"></i></span>
+              </button>
+              <button class="quick-start-card" data-prompt="How do I solve Binary Search questions where we search on a range of answers (Search Space Monotonicity)?">
+                <h4>BS on Answer Range</h4>
+                <p>Discover the pattern of search spaces and decision functions.</p>
+                <span class="card-action"><i data-lucide="arrow-right"></i></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat messages will be dynamically injected here -->
+        
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator-wrapper hidden" id="typing-indicator">
+        <div class="typing-tutor-avatar">
+          <i data-lucide="bot"></i>
+        </div>
+        <div class="typing-bubble">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <footer class="chat-input-area">
+        <div class="input-container-wrapper">
+          <div class="input-toolbar">
+            <button class="toolbar-btn" id="export-chat-btn" title="Export this chat as Markdown" disabled>
+              <i data-lucide="download"></i> Export Markdown
+            </button>
+            <button class="toolbar-btn" id="clear-chat-btn" title="Clear current conversation" disabled>
+              <i data-lucide="rotate-ccw"></i> Clear Chat
+            </button>
+            <span class="char-counter" id="char-counter">0 characters</span>
+          </div>
+          <div class="input-form">
+            <textarea 
+              id="chat-textarea" 
+              placeholder="Paste LeetCode question, algorithm challenge, or interview question here..." 
+              rows="1"
+              required
+            ></textarea>
+            <button class="send-btn" id="send-btn" type="submit" title="Send message">
+              <i data-lucide="send"></i>
+            </button>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- CDN scripts -->
+  <!-- Marked.js (for parsing markdown) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <!-- Prism.js (for syntax highlighting) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <!-- Prism components (load languages for DSA) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+
+  <!-- Client Application logic -->
+  <script src="app.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
